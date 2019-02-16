@@ -28,6 +28,53 @@ Public Sub StartCode()
 End Sub
 
 '---------------------------------------------------------------------------------------------------------------------------
+' Objective:    Converts Brazil (European) dates to English.
+'
+' History:      Revision    Date            Developer           Notes
+'                    1.0    16-Feb-2019     Eduardo Garcia      Created.
+'---------------------------------------------------------------------------------------------------------------------------
+Public Sub DateBRtoUS(HeaderRow As Long, ColumnByName As String, LastRow As Long)
+    Dim yDay As Byte
+    Dim yMonth As Byte
+    Dim lYear As Long
+    
+    Dim tHours As Date
+    
+    Dim rngRange As Range
+    
+    
+    Range(HeaderRow & ":" & HeaderRow).Find(ColumnByName, Cells(HeaderRow, 1), _
+        xlValues, xlWhole).Offset(1, 0).Activate
+    
+    'Range(ActiveCell, Cells(LastRow, ActiveCell.Column)).TextToColumns _
+        Destination:=ActiveCell, DataType:=xlDelimited, TextQualifier:=xlNone, _
+        ConsecutiveDelimiter:=False, Tab:=False, Semicolon:=False, Comma:=False, _
+        Space:=False, Other:=False, FieldInfo:=Array(1, xlDMYFormat), _
+        TrailingMinusNumbers:=True
+    
+    For Each rngRange In Range(ActiveCell, Cells(LastRow, ActiveCell.Column))
+        
+        If rngRange.value = "" Then
+            GoTo NextRange
+        End If
+        
+        yDay = Left(rngRange.value, 2)
+        yMonth = Mid(rngRange.value, 4, 2)
+        lYear = Mid(rngRange.value, 7, 4)
+        tHours = 0
+        
+        If InStr(1, rngRange.value, " ", vbTextCompare) > 0 Then
+            tHours = Right(rngRange.value, 8)
+        End If
+        
+        rngRange.value = CDate(yMonth & "/" & yDay & "/" & lYear & " " & tHours)
+NextRange:
+    Next rngRange
+    
+    Set rngRange = Nothing
+End Sub
+
+'---------------------------------------------------------------------------------------------------------------------------
 ' Objective:    Finished appliction for automation execution.
 '
 ' History:      Revision    Date            Developer           Notes
@@ -498,6 +545,27 @@ Optional ByVal DisplayMSG As Boolean = True, Optional ByVal ExportToFile As Bool
     
 End Sub
 
+'---------------------------------------------------------------------------------------------------------------------------
+' Objective:    Converts Brazil (European) numbers to English or just fix them.
+'
+' History:      Revision    Date            Developer           Notes
+'                    1.0    16-Feb-2019     Eduardo Garcia      Created.
+'---------------------------------------------------------------------------------------------------------------------------
+Public Sub NumberBRtoUS(HeaderRow As Long, ColumnByName As String, LastRow As Long)
+    Range(HeaderRow & ":" & HeaderRow).Find(ColumnByName, Cells(HeaderRow, 1), _
+        xlValues, xlWhole).Offset(1, 0).Activate
+    
+    ' Check language (1033 = US, 1046 = BR)
+    If Application.SpellingOptions.DictLang = 1033 Then
+        Range(ActiveCell, Cells(LastRow, ActiveCell.Column)).TextToColumns _
+            Destination:=ActiveCell, DataType:=xlDelimited, TextQualifier:=xlNone, _
+            ConsecutiveDelimiter:=False, Tab:=False, Semicolon:=False, Comma:=False, _
+            Space:=False, Other:=False, FieldInfo:=Array(1, xlGeneralFormat), _
+            DecimalSeparator:=",", ThousandsSeparator:=".", TrailingMinusNumbers:=True
+    End If
+    
+End Sub
+
 '--------------------------------------------------------------------------------------------------
 ' Objective:    Rename pivot field name.
 '
@@ -591,6 +659,45 @@ Sub RestoreCalculationAndDisplayAlerts()
 End Sub
 
 '--------------------------------------------------------------------------------------------------
+' Objective:    Export modules and classes.
+'
+' History:      Revision    Date            Developer           Notes
+'                    1.0    16-Feb-2019     Eduardo Garcia      Created.
+'--------------------------------------------------------------------------------------------------
+Public Sub SourceExport()
+    Dim yModule As Byte
+    
+    Dim sSourcePath As String
+    
+    Dim objFSO As Object
+    
+    
+    sSourcePath = ThisWorkbook.Path & "\Source\"
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    With ThisWorkbook.VBProject.VBComponents
+        
+        For yModule = 1 To .Count
+            
+            Select Case Left(.Item(yModule).Name, 3)
+                Case "sht", "cls"
+                    .Item(yModule).Export sSourcePath & .Item(yModule).Name & ".cls"
+                Case "mdl"
+                    .Item(yModule).Export sSourcePath & .Item(yModule).Name & ".cls"
+                Case "Thi"
+                    .Item(yModule).Export sSourcePath & "ThisWorkbook.cls"
+            End Select
+            
+        Next yModule
+    
+    End With
+    
+    MsgBox "Modules exported", vbInformation
+    
+    Set objFSO = Nothing
+End Sub
+
+'--------------------------------------------------------------------------------------------------
 ' Objective:    Remove non-used Styles.
 '
 ' Requires:
@@ -664,4 +771,3 @@ Optional ByVal ExportToFile As Boolean = False)
     End If
     
 End Sub
-
