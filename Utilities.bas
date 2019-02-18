@@ -552,18 +552,34 @@ End Sub
 '                    1.0    16-Feb-2019     Eduardo Garcia      Created.
 '---------------------------------------------------------------------------------------------------------------------------
 Public Sub NumberBRtoUS(HeaderRow As Long, ColumnByName As String, LastRow As Long)
+    Dim sDecimal As String
+    Dim sThousand As String
+    
+    
     Range(HeaderRow & ":" & HeaderRow).Find(ColumnByName, Cells(HeaderRow, 1), _
         xlValues, xlWhole).Offset(1, 0).Activate
     
     ' Check language (1033 = US, 1046 = BR)
-    If Application.SpellingOptions.DictLang = 1033 Then
-        Range(ActiveCell, Cells(LastRow, ActiveCell.Column)).TextToColumns _
-            Destination:=ActiveCell, DataType:=xlDelimited, TextQualifier:=xlNone, _
-            ConsecutiveDelimiter:=False, Tab:=False, Semicolon:=False, Comma:=False, _
-            Space:=False, Other:=False, FieldInfo:=Array(1, xlGeneralFormat), _
-            DecimalSeparator:=",", ThousandsSeparator:=".", TrailingMinusNumbers:=True
-    End If
+    Select Case Application.SpellingOptions.DictLang
+        Case 1033
+            sDecimal = "."
+            sThousand = ","
+        Case 1046
+            sDecimal = ","
+            sThousand = "."
+        Case Else
+            MsgBox "Missing defition of separators for Decimal and Thousand " & vbCrLf & _
+                "Please contact Eduardo Pereira Garcia at edupgarcia@protonmail.com " & _
+                "and ask for this fix.", vbCritical
+            Exit Sub
+    End Select
     
+    Range(ActiveCell, Cells(LastRow, ActiveCell.Column)).TextToColumns _
+        Destination:=ActiveCell, DataType:=xlDelimited, TextQualifier:=xlNone, _
+        ConsecutiveDelimiter:=False, Tab:=False, Semicolon:=False, Comma:=False, _
+        Space:=False, Other:=False, FieldInfo:=Array(1, xlGeneralFormat), _
+        DecimalSeparator:=sDecimal, ThousandsSeparator:=sThousand, _
+        TrailingMinusNumbers:=True
 End Sub
 
 '--------------------------------------------------------------------------------------------------
