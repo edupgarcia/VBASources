@@ -699,7 +699,7 @@ Public Sub SourceExport()
                 Case "sht", "cls"
                     .Item(yModule).Export sSourcePath & .Item(yModule).Name & ".cls"
                 Case "mdl"
-                    .Item(yModule).Export sSourcePath & .Item(yModule).Name & ".cls"
+                    .Item(yModule).Export sSourcePath & .Item(yModule).Name & ".bas"
                 Case "Thi"
                     .Item(yModule).Export sSourcePath & "ThisWorkbook.cls"
             End Select
